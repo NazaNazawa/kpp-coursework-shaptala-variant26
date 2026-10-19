@@ -6,7 +6,12 @@ import ua.edu.nupp.kpp.client.Model.Enrollment;
 import ua.edu.nupp.kpp.client.Model.Listener;
 import ua.edu.nupp.kpp.client.Model.StudyTask;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -98,8 +103,16 @@ public class HttpCourseClient {
         post("/listeners", formData);
     }
 
+    // Зроблено 1 в 1 як у робочому проєкті через HttpURLConnection та GET
     public void deleteListener(Long id) {
-        post("/listeners", "action=delete&id=" + id);
+        try {
+            URL url = new URL(BASE_URL + "/listeners?action=delete&id=" + id);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.getResponseCode();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public List<Enrollment> getEnrollments() {
@@ -190,27 +203,6 @@ public class HttpCourseClient {
 
     public void deleteStudyTask(Long id) {
         post("/tasks", "action=delete&id=" + id);
-    }
-
-    private void get(String path) {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + path))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(
-                    request, HttpResponse.BodyHandlers.ofString()
-            );
-
-            if (response.statusCode() >= 400) {
-                throw new RuntimeException(
-                        "Сервер повернув помилку: " + response.body()
-                );
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 
     private void post(String path, String formData) {

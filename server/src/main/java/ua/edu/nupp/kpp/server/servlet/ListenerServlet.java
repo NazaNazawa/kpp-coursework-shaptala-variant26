@@ -4,67 +4,60 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ua.edu.nupp.kpp.server.dao.ListenerDao;
 import ua.edu.nupp.kpp.server.model.Listener;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
 
 @WebServlet("/listeners")
 public class ListenerServlet extends HttpServlet {
-    private static final Logger LOGGER = Logger.getLogger(ListenerServlet.class.getName());
     private final ListenerDao listenerDao = new ListenerDao();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
-        List<Listener> listeners = listenerDao.getAllListeners();
-        objectMapper.writeValue(resp.getWriter(), listeners);
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json; charset=UTF-8");
+        try {
+            if ("delete".equals(req.getParameter("action"))) {
+                listenerDao.deleteListener(Long.parseLong(req.getParameter("id")));
+                resp.getWriter().write("{\"status\":\"success\"}");
+                return;
+            }
+            mapper.writeValue(resp.getWriter(), listenerDao.getAllListeners());
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            Map<String, String> err = new HashMap<>();
+            err.put("error", e.getMessage());
+            mapper.writeValue(resp.getWriter(), err);
+        }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
-
+        resp.setContentType("application/json; charset=UTF-8");
         try {
-            String action = req.getParameter("action");
+            String idStr = req.getParameter("id");
+            Listener listener = new Listener();
+            listener.setFullName(req.getParameter("full_name"));
+            listener.setEmail(req.getParameter("email"));
+            listener.setPhone(req.getParameter("phone"));
 
-            if ("delete".equals(action)) {
-                Long id = Long.parseLong(req.getParameter("id"));
-
-                listenerDao.deleteListener(id);
-
-                resp.setStatus(HttpServletResponse.SC_OK);
-                return;
-            }
-
-            String fullName = req.getParameter("full_name");
-            String email = req.getParameter("email");
-            String phone = req.getParameter("phone");
-
-            if (fullName != null && email != null && phone != null) {
-                Listener listener = new Listener(null, fullName, email, phone);
-                listenerDao.addListener(listener);
-
-                LOGGER.info("Успішно додано слухача: " + fullName);
-                resp.setStatus(HttpServletResponse.SC_OK);
+            if (idStr != null && !idStr.isEmpty()) {
+                listener.setId(Long.parseLong(idStr));
             } else {
-                resp.sendError(
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "Неповні дані слухача"
-                );
+                listenerDao.addListener(listener);
             }
+            resp.getWriter().write("{\"status\":\"success\"}");
         } catch (Exception e) {
-            LOGGER.warning("Помилка обробки слухача: " + e.getMessage());
-            resp.sendError(
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    e.getMessage()
-            );
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            Map<String, String> err = new HashMap<>();
+            err.put("error", e.getMessage());
+            mapper.writeValue(resp.getWriter(), err);
         }
     }
 }

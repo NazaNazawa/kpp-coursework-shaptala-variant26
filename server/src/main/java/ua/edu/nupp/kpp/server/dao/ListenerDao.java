@@ -6,8 +6,10 @@ import ua.edu.nupp.kpp.server.model.Listener;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ListenerDao {
+    private static final Logger LOGGER = Logger.getLogger(ListenerDao.class.getName());
 
     public List<Listener> getAllListeners() {
         List<Listener> listeners = new ArrayList<>();
@@ -49,6 +51,10 @@ public class ListenerDao {
     }
 
     public void deleteListener(Long id) {
+        // Прямий вивід ID та запиту перед виконанням у базі
+        System.out.println(">>> DAO DELETE: DELETE FROM listener WHERE id = " + id + ";");
+        LOGGER.info(">>> DAO DELETE: DELETE FROM listener WHERE id = " + id + ";");
+
         String sql = "DELETE FROM listener WHERE id = ?";
 
         try (Connection conn = DBUtil.getConnection();

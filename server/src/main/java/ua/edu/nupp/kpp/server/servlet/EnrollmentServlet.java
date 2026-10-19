@@ -39,9 +39,8 @@ public class EnrollmentServlet extends HttpServlet {
 
             if ("delete".equals(action)) {
                 Long id = Long.parseLong(req.getParameter("id"));
-
                 enrollmentDao.deleteEnrollment(id);
-
+                LOGGER.info("Успішно видалено зарахування з ID: " + id);
                 resp.setStatus(HttpServletResponse.SC_OK);
                 return;
             }
@@ -62,6 +61,7 @@ public class EnrollmentServlet extends HttpServlet {
                 if (target != null) {
                     enrollmentService.changeState(target, targetState);
                     enrollmentDao.updateEnrollment(target);
+                    LOGGER.info("Успішно змінено стан зарахування ID: " + id + " на " + targetState);
                     resp.setStatus(HttpServletResponse.SC_OK);
                 } else {
                     resp.sendError(
@@ -89,8 +89,10 @@ public class EnrollmentServlet extends HttpServlet {
                         integralScore
                 );
 
+                enrollmentDao.addEnrollment(enrollment);
+
                 LOGGER.info(
-                        "Опрацьовано створення зарахування для слухача ID: " + listenerId
+                        "Успішно створено зарахування для курсу ID: " + courseId + " та слухача ID: " + listenerId
                 );
                 resp.setStatus(HttpServletResponse.SC_OK);
             }

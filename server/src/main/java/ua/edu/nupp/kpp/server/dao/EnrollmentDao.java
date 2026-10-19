@@ -69,4 +69,29 @@ public class EnrollmentDao {
             throw new RuntimeException("Помилка видалення зарахування ID " + id, e);
         }
     }
+
+    public void addEnrollment(Enrollment enrollment) {
+        String sql = "INSERT INTO enrollment (course_id, listener_id, state, f1, f2, f3, integral_score) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setLong(1, enrollment.getCourseId());
+            pstmt.setLong(2, enrollment.getListenerId());
+            pstmt.setString(3, enrollment.getState());
+            pstmt.setDouble(4, enrollment.getF1());
+            pstmt.setDouble(5, enrollment.getF2());
+            pstmt.setDouble(6, enrollment.getF3());
+            pstmt.setDouble(7, enrollment.getIntegralScore());
+            pstmt.executeUpdate();
+
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    enrollment.setId(generatedKeys.getLong(1));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
