@@ -9,6 +9,14 @@ public class StudyTask {
 
     public StudyTask() {}
 
+    public StudyTask(Long id, Long enrollmentId, String title, int maxScore, String dueDate) {
+        this.id = id;
+        this.enrollmentId = enrollmentId;
+        this.title = title;
+        this.maxScore = maxScore;
+        this.dueDate = dueDate;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getEnrollmentId() { return enrollmentId; }

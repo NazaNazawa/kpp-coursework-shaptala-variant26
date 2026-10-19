@@ -6,40 +6,4 @@
 
     <display-name>Course Management Server</display-name>
 
-    <servlet>
-        <servlet-name>CourseServlet</servlet-name>
-        <servlet-class>ua.edu.nupp.kpp.server.servlet.CourseServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>CourseServlet</servlet-name>
-        <url-pattern>/courses</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>ListenerServlet</servlet-name>
-        <servlet-class>ua.edu.nupp.kpp.server.servlet.ListenerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ListenerServlet</servlet-name>
-        <url-pattern>/listeners</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>EnrollmentServlet</servlet-name>
-        <servlet-class>ua.edu.nupp.kpp.server.servlet.EnrollmentServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>EnrollmentServlet</servlet-name>
-        <url-pattern>/enrollments</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>StudyTaskServlet</servlet-name>
-        <servlet-class>ua.edu.nupp.kpp.server.servlet.StudyTaskServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>StudyTaskServlet</servlet-name>
-        <url-pattern>/tasks</url-pattern>
-    </servlet-mapping>
-
 </web-app>

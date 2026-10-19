@@ -1,7 +1,10 @@
 package ua.edu.nupp.kpp.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ua.edu.nupp.kpp.client.Model.Course;
+import ua.edu.nupp.kpp.client.Model.Enrollment;
 import ua.edu.nupp.kpp.client.Model.Listener;
+import ua.edu.nupp.kpp.client.Model.StudyTask;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -17,12 +20,39 @@ public class HttpCourseClient {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public List<Course> getCourses() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/courses")).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return Arrays.asList(objectMapper.readValue(response.body(), Course[].class));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    public void addCourse(Course course) {
+        String formData = "title=" + enc(course.getTitle()) +
+                "&description=" + enc(course.getDescription()) +
+                "&credits=" + course.getCredits();
+        post("/courses", formData);
+    }
+
+    public void updateCourse(Course course) {
+        String formData = "action=update&id=" + course.getId() +
+                "&title=" + enc(course.getTitle()) +
+                "&description=" + enc(course.getDescription()) +
+                "&credits=" + course.getCredits();
+        post("/courses", formData);
+    }
+
+    public void deleteCourse(Long id) {
+        get("/courses?action=delete&id=" + id);
+    }
+
     public List<Listener> getListeners() {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/listeners"))
-                    .GET()
-                    .build();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/listeners")).GET().build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return Arrays.asList(objectMapper.readValue(response.body(), Listener[].class));
         } catch (Exception e) {
@@ -32,19 +62,112 @@ public class HttpCourseClient {
     }
 
     public void addListener(Listener listener) {
-        try {
-            String formData = "full_name=" + URLEncoder.encode(listener.getFullName(), StandardCharsets.UTF_8) +
-                    "&email=" + URLEncoder.encode(listener.getEmail(), StandardCharsets.UTF_8) +
-                    "&phone=" + URLEncoder.encode(listener.getPhone(), StandardCharsets.UTF_8);
+        String formData = "full_name=" + enc(listener.getFullName()) +
+                "&email=" + enc(listener.getEmail()) +
+                "&phone=" + enc(listener.getPhone());
+        post("/listeners", formData);
+    }
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/listeners"))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(formData))
-                    .build();
-            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    public void updateListener(Listener listener) {
+        String formData = "action=update&id=" + listener.getId() +
+                "&full_name=" + enc(listener.getFullName()) +
+                "&email=" + enc(listener.getEmail()) +
+                "&phone=" + enc(listener.getPhone());
+        post("/listeners", formData);
+    }
+
+    public void deleteListener(Long id) {
+        get("/listeners?action=delete&id=" + id);
+    }
+
+    public List<Enrollment> getEnrollments() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/enrollments")).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return Arrays.asList(objectMapper.readValue(response.body(), Enrollment[].class));
         } catch (Exception e) {
             e.printStackTrace();
+            return List.of();
         }
+    }
+
+    public void addEnrollment(Long courseId, Long listenerId, double f1, double f2, double f3) {
+        String formData = "course_id=" + courseId +
+                "&listener_id=" + listenerId +
+                "&f1=" + f1 + "&f2=" + f2 + "&f3=" + f3;
+        post("/enrollments", formData);
+    }
+
+    public void changeEnrollmentState(Long id, String targetState) {
+        String formData = "action=transition&id=" + id + "&target_state=" + targetState;
+        post("/enrollments", formData);
+    }
+
+    public void deleteEnrollment(Long id) {
+        get("/enrollments?action=delete&id=" + id);
+    }
+
+    public List<StudyTask> getTasks() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/tasks")).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return Arrays.asList(objectMapper.readValue(response.body(), StudyTask[].class));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    public void addStudyTask(StudyTask task) {
+        String formData = "enrollment_id=" + task.getEnrollmentId() +
+                "&title=" + enc(task.getTitle()) +
+                "&max_score=" + task.getMaxScore() +
+                "&due_date=" + enc(task.getDueDate());
+        post("/tasks", formData);
+    }
+
+    public void updateStudyTask(StudyTask task) {
+        String formData = "action=update&id=" + task.getId() +
+                "&enrollment_id=" + task.getEnrollmentId() +
+                "&title=" + enc(task.getTitle()) +
+                "&max_score=" + task.getMaxScore() +
+                "&due_date=" + enc(task.getDueDate());
+        post("/tasks", formData);
+    }
+
+    public void deleteStudyTask(Long id) {
+        get("/tasks?action=delete&id=" + id);
+    }
+
+    private void get(String path) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + path)).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Сервер повернув помилку: " + response.body());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private void post(String path, String formData) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + path))
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+                    .POST(HttpRequest.BodyPublishers.ofString(formData, StandardCharsets.UTF_8))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Сервер повернув помилку: " + response.body());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private String enc(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
     }
 }
