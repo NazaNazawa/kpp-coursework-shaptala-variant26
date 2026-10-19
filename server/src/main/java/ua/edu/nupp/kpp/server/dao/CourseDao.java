@@ -29,6 +29,7 @@ public class CourseDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return courses;
     }
 
@@ -45,6 +46,20 @@ public class CourseDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void deleteCourse(Long id) {
+        String sql = "DELETE FROM course WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, id);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Помилка видалення курсу ID " + id, e);
         }
     }
 }
