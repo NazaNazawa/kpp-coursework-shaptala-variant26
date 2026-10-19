@@ -22,6 +22,7 @@ public class StudyTaskServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+
         List<StudyTask> tasks = taskDao.getAllTasks();
         objectMapper.writeValue(resp.getWriter(), tasks);
     }
@@ -29,23 +30,49 @@ public class StudyTaskServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
+
         try {
+            String action = req.getParameter("action");
+
+            if ("delete".equals(action)) {
+                Long id = Long.parseLong(req.getParameter("id"));
+
+                taskDao.deleteTask(id);
+
+                resp.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
+
             Long enrollmentId = Long.parseLong(req.getParameter("enrollment_id"));
             String title = req.getParameter("title");
             int maxScore = Integer.parseInt(req.getParameter("max_score"));
             String dueDate = req.getParameter("due_date");
 
             if (title != null && dueDate != null) {
-                StudyTask task = new StudyTask(null, enrollmentId, title, maxScore, dueDate);
+                StudyTask task = new StudyTask(
+                        null,
+                        enrollmentId,
+                        title,
+                        maxScore,
+                        dueDate
+                );
+
                 taskDao.addTask(task);
+
                 LOGGER.info("Успішно додано навчальне завдання: " + title);
                 resp.setStatus(HttpServletResponse.SC_OK);
             } else {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Неповні дані завдання");
+                resp.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Неповні дані завдання"
+                );
             }
         } catch (Exception e) {
-            LOGGER.warning("Помилка додавання завдання: " + e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            LOGGER.warning("Помилка обробки завдання: " + e.getMessage());
+            resp.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    e.getMessage()
+            );
         }
     }
 }

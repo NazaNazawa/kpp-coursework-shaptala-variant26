@@ -22,9 +22,18 @@ public class HttpCourseClient {
 
     public List<Course> getCourses() {
         try {
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/courses")).GET().build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return Arrays.asList(objectMapper.readValue(response.body(), Course[].class));
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/courses"))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString()
+            );
+
+            return Arrays.asList(
+                    objectMapper.readValue(response.body(), Course[].class)
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -35,6 +44,7 @@ public class HttpCourseClient {
         String formData = "title=" + enc(course.getTitle()) +
                 "&description=" + enc(course.getDescription()) +
                 "&credits=" + course.getCredits();
+
         post("/courses", formData);
     }
 
@@ -43,18 +53,28 @@ public class HttpCourseClient {
                 "&title=" + enc(course.getTitle()) +
                 "&description=" + enc(course.getDescription()) +
                 "&credits=" + course.getCredits();
+
         post("/courses", formData);
     }
 
     public void deleteCourse(Long id) {
-        get("/courses?action=delete&id=" + id);
+        post("/courses", "action=delete&id=" + id);
     }
 
     public List<Listener> getListeners() {
         try {
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/listeners")).GET().build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return Arrays.asList(objectMapper.readValue(response.body(), Listener[].class));
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/listeners"))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString()
+            );
+
+            return Arrays.asList(
+                    objectMapper.readValue(response.body(), Listener[].class)
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -65,6 +85,7 @@ public class HttpCourseClient {
         String formData = "full_name=" + enc(listener.getFullName()) +
                 "&email=" + enc(listener.getEmail()) +
                 "&phone=" + enc(listener.getPhone());
+
         post("/listeners", formData);
     }
 
@@ -73,45 +94,75 @@ public class HttpCourseClient {
                 "&full_name=" + enc(listener.getFullName()) +
                 "&email=" + enc(listener.getEmail()) +
                 "&phone=" + enc(listener.getPhone());
+
         post("/listeners", formData);
     }
 
     public void deleteListener(Long id) {
-        get("/listeners?action=delete&id=" + id);
+        post("/listeners", "action=delete&id=" + id);
     }
 
     public List<Enrollment> getEnrollments() {
         try {
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/enrollments")).GET().build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return Arrays.asList(objectMapper.readValue(response.body(), Enrollment[].class));
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/enrollments"))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString()
+            );
+
+            return Arrays.asList(
+                    objectMapper.readValue(response.body(), Enrollment[].class)
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
         }
     }
 
-    public void addEnrollment(Long courseId, Long listenerId, double f1, double f2, double f3) {
+    public void addEnrollment(
+            Long courseId,
+            Long listenerId,
+            double f1,
+            double f2,
+            double f3
+    ) {
         String formData = "course_id=" + courseId +
                 "&listener_id=" + listenerId +
-                "&f1=" + f1 + "&f2=" + f2 + "&f3=" + f3;
+                "&f1=" + f1 +
+                "&f2=" + f2 +
+                "&f3=" + f3;
+
         post("/enrollments", formData);
     }
 
     public void changeEnrollmentState(Long id, String targetState) {
-        String formData = "action=transition&id=" + id + "&target_state=" + targetState;
+        String formData = "action=transition&id=" + id +
+                "&target_state=" + targetState;
+
         post("/enrollments", formData);
     }
 
     public void deleteEnrollment(Long id) {
-        get("/enrollments?action=delete&id=" + id);
+        post("/enrollments", "action=delete&id=" + id);
     }
 
     public List<StudyTask> getTasks() {
         try {
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/tasks")).GET().build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return Arrays.asList(objectMapper.readValue(response.body(), StudyTask[].class));
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/tasks"))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString()
+            );
+
+            return Arrays.asList(
+                    objectMapper.readValue(response.body(), StudyTask[].class)
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -123,6 +174,7 @@ public class HttpCourseClient {
                 "&title=" + enc(task.getTitle()) +
                 "&max_score=" + task.getMaxScore() +
                 "&due_date=" + enc(task.getDueDate());
+
         post("/tasks", formData);
     }
 
@@ -132,19 +184,29 @@ public class HttpCourseClient {
                 "&title=" + enc(task.getTitle()) +
                 "&max_score=" + task.getMaxScore() +
                 "&due_date=" + enc(task.getDueDate());
+
         post("/tasks", formData);
     }
 
     public void deleteStudyTask(Long id) {
-        get("/tasks?action=delete&id=" + id);
+        post("/tasks", "action=delete&id=" + id);
     }
 
     private void get(String path) {
         try {
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE_URL + path)).GET().build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + path))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString()
+            );
+
             if (response.statusCode() >= 400) {
-                throw new RuntimeException("Сервер повернув помилку: " + response.body());
+                throw new RuntimeException(
+                        "Сервер повернув помилку: " + response.body()
+                );
             }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -155,12 +217,25 @@ public class HttpCourseClient {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + path))
-                    .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-                    .POST(HttpRequest.BodyPublishers.ofString(formData, StandardCharsets.UTF_8))
+                    .header(
+                            "Content-Type",
+                            "application/x-www-form-urlencoded; charset=UTF-8"
+                    )
+                    .POST(
+                            HttpRequest.BodyPublishers.ofString(
+                                    formData, StandardCharsets.UTF_8
+                            )
+                    )
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString()
+            );
+
             if (response.statusCode() >= 400) {
-                throw new RuntimeException("Сервер повернув помилку: " + response.body());
+                throw new RuntimeException(
+                        "Сервер повернув помилку: " + response.body()
+                );
             }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -168,6 +243,9 @@ public class HttpCourseClient {
     }
 
     private String enc(String value) {
-        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
+        return URLEncoder.encode(
+                value == null ? "" : value,
+                StandardCharsets.UTF_8
+        );
     }
 }

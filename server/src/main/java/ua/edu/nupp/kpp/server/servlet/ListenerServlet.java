@@ -22,6 +22,7 @@ public class ListenerServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+
         List<Listener> listeners = listenerDao.getAllListeners();
         objectMapper.writeValue(resp.getWriter(), listeners);
     }
@@ -29,7 +30,19 @@ public class ListenerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
+
         try {
+            String action = req.getParameter("action");
+
+            if ("delete".equals(action)) {
+                Long id = Long.parseLong(req.getParameter("id"));
+
+                listenerDao.deleteListener(id);
+
+                resp.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
+
             String fullName = req.getParameter("full_name");
             String email = req.getParameter("email");
             String phone = req.getParameter("phone");
@@ -37,14 +50,21 @@ public class ListenerServlet extends HttpServlet {
             if (fullName != null && email != null && phone != null) {
                 Listener listener = new Listener(null, fullName, email, phone);
                 listenerDao.addListener(listener);
+
                 LOGGER.info("Успішно додано слухача: " + fullName);
                 resp.setStatus(HttpServletResponse.SC_OK);
             } else {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Неповні дані слухача");
+                resp.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Неповні дані слухача"
+                );
             }
         } catch (Exception e) {
-            LOGGER.warning("Помилка додавання слухача: " + e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            LOGGER.warning("Помилка обробки слухача: " + e.getMessage());
+            resp.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    e.getMessage()
+            );
         }
     }
 }
