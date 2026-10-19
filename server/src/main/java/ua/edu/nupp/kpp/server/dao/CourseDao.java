@@ -11,7 +11,7 @@ public class CourseDao {
 
     public List<Course> getAllCourses() {
         List<Course> courses = new ArrayList<>();
-        String sql = "SELECT id, title, description, credits FROM course";
+        String sql = "SELECT id, title, description, credits FROM course ORDER BY id";
 
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -42,6 +42,23 @@ public class CourseDao {
             pstmt.setString(1, course.getTitle());
             pstmt.setString(2, course.getDescription());
             pstmt.setInt(3, course.getCredits());
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateCourse(Course course) {
+        String sql = "UPDATE course SET title = ?, description = ?, credits = ? WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, course.getTitle());
+            pstmt.setString(2, course.getDescription());
+            pstmt.setInt(3, course.getCredits());
+            pstmt.setLong(4, course.getId());
             pstmt.executeUpdate();
 
         } catch (SQLException e) {

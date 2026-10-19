@@ -46,7 +46,7 @@ public class HttpCourseClient {
         post("/courses", formData);
     }
 
-    public void deleteCourse(Long id) {
+    public void deleteCourse(long id) {
         get("/courses?action=delete&id=" + id);
     }
 

@@ -11,7 +11,7 @@ public class ListenerDao {
 
     public List<Listener> getAllListeners() {
         List<Listener> listeners = new ArrayList<>();
-        String sql = "SELECT id, full_name, email, phone FROM listener";
+        String sql = "SELECT id, full_name, email, phone FROM listener ORDER BY id";
 
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -44,6 +44,37 @@ public class ListenerDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void updateListener(Listener listener) {
+        String sql = "UPDATE listener SET full_name = ?, email = ?, phone = ? WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, listener.getFullName());
+            pstmt.setString(2, listener.getEmail());
+            pstmt.setString(3, listener.getPhone());
+            pstmt.setLong(4, listener.getId());
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteListener(Long id) {
+        String sql = "DELETE FROM listener WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, id);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Помилка видалення слухача ID " + id, e);
         }
     }
 }

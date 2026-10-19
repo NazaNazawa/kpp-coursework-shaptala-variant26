@@ -38,7 +38,6 @@ CREATE TABLE study_task (
                             FOREIGN KEY (enrollment_id) REFERENCES enrollment(id) ON DELETE CASCADE
 );
 
-
 INSERT INTO course (title, description, credits) VALUES
                                                      ('Кросплатформене програмування', 'Вивчення Java, JavaFX, Servlets та MySQL', 5),
                                                      ('Бази даних та SQL', 'Проєктування реляційних баз даних', 4);

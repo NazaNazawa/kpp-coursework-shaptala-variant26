@@ -25,8 +25,20 @@ public class EnrollmentServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        List<Enrollment> enrollments = enrollmentDao.getAllEnrollments();
-        objectMapper.writeValue(resp.getWriter(), enrollments);
+
+        try {
+            String action = req.getParameter("action");
+            if ("delete".equals(action)) {
+                Long id = Long.parseLong(req.getParameter("id"));
+                enrollmentDao.deleteEnrollment(id);
+                LOGGER.info("Успішно видалено зарахування ID: " + id);
+            }
+            List<Enrollment> enrollments = enrollmentDao.getAllEnrollments();
+            objectMapper.writeValue(resp.getWriter(), enrollments);
+        } catch (Exception e) {
+            LOGGER.warning("Помилка в EnrollmentServlet GET: " + e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        }
     }
 
     @Override
@@ -58,11 +70,15 @@ public class EnrollmentServlet extends HttpServlet {
                 double integralScore = enrollmentService.calculateIntegralScore(f1, f2, f3);
 
                 Enrollment enrollment = new Enrollment(null, courseId, listenerId, EnrollmentState.REQUESTED.name(), f1, f2, f3, integralScore);
-                LOGGER.info("Опрацьовано створення зарахування для слухача ID: " + listenerId);
+
+                // ВАЖЛИВО: додаємо збереження в базу через DAO!
+                enrollmentDao.addEnrollment(enrollment);
+
+                LOGGER.info("Успішно збережено зарахування для слухача ID: " + listenerId);
                 resp.setStatus(HttpServletResponse.SC_OK);
             }
         } catch (Exception e) {
-            LOGGER.warning("Помилка в EnrollmentServlet: " + e.getMessage());
+            LOGGER.warning("Помилка в EnrollmentServlet POST: " + e.getMessage());
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }

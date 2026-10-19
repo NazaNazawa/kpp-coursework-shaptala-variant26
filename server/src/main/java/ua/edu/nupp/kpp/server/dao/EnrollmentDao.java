@@ -11,7 +11,7 @@ public class EnrollmentDao {
 
     public List<Enrollment> getAllEnrollments() {
         List<Enrollment> enrollments = new ArrayList<>();
-        String sql = "SELECT id, course_id, listener_id, state, f1, f2, f3, integral_score FROM enrollment";
+        String sql = "SELECT id, course_id, listener_id, state, f1, f2, f3, integral_score FROM enrollment ORDER BY id";
 
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -35,6 +35,27 @@ public class EnrollmentDao {
         return enrollments;
     }
 
+    public void addEnrollment(Enrollment enrollment) {
+        String sql = "INSERT INTO enrollment (course_id, listener_id, state, f1, f2, f3, integral_score) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, enrollment.getCourseId());
+            pstmt.setLong(2, enrollment.getListenerId());
+            pstmt.setString(3, enrollment.getState());
+            pstmt.setDouble(4, enrollment.getF1());
+            pstmt.setDouble(5, enrollment.getF2());
+            pstmt.setDouble(6, enrollment.getF3());
+            pstmt.setDouble(7, enrollment.getIntegralScore());
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Помилка додавання зарахування: " + e.getMessage(), e);
+        }
+    }
+
     public void updateEnrollment(Enrollment enrollment) {
         String sql = "UPDATE enrollment SET state = ?, f1 = ?, f2 = ?, f3 = ?, integral_score = ? WHERE id = ?";
 
@@ -51,6 +72,20 @@ public class EnrollmentDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void deleteEnrollment(Long id) {
+        String sql = "DELETE FROM enrollment WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, id);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Помилка видалення зарахування ID " + id, e);
         }
     }
 }

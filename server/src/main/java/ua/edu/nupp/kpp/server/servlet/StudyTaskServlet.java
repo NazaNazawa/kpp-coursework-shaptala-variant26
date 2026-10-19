@@ -23,8 +23,19 @@ public class StudyTaskServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        List<StudyTask> tasks = taskDao.getAllTasks();
-        objectMapper.writeValue(resp.getWriter(), tasks);
+        try {
+            String action = req.getParameter("action");
+            if ("delete".equals(action)) {
+                Long id = Long.parseLong(req.getParameter("id"));
+                taskDao.deleteTask(id);
+                LOGGER.info("Успішно видалено завдання ID: " + id);
+            }
+            List<StudyTask> tasks = taskDao.getAllTasks();
+            objectMapper.writeValue(resp.getWriter(), tasks);
+        } catch (Exception e) {
+            LOGGER.warning("Помилка в StudyTaskServlet GET: " + e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        }
     }
 
     @Override
@@ -33,46 +44,25 @@ public class StudyTaskServlet extends HttpServlet {
 
         try {
             String action = req.getParameter("action");
-
-            if ("delete".equals(action)) {
-                Long id = Long.parseLong(req.getParameter("id"));
-
-                taskDao.deleteTask(id);
-
-                resp.setStatus(HttpServletResponse.SC_OK);
-                return;
-            }
-
             Long enrollmentId = Long.parseLong(req.getParameter("enrollment_id"));
             String title = req.getParameter("title");
             int maxScore = Integer.parseInt(req.getParameter("max_score"));
             String dueDate = req.getParameter("due_date");
 
-            if (title != null && dueDate != null) {
-                StudyTask task = new StudyTask(
-                        null,
-                        enrollmentId,
-                        title,
-                        maxScore,
-                        dueDate
-                );
-
-                taskDao.addTask(task);
-
-                LOGGER.info("Успішно додано навчальне завдання: " + title);
-                resp.setStatus(HttpServletResponse.SC_OK);
+            if ("update".equals(action)) {
+                Long id = Long.parseLong(req.getParameter("id"));
+                StudyTask task = new StudyTask(id, enrollmentId, title, maxScore, dueDate);
+                taskDao.updateTask(task);
+                LOGGER.info("Успішно оновлено завдання: " + title);
             } else {
-                resp.sendError(
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "Неповні дані завдання"
-                );
+                StudyTask task = new StudyTask(null, enrollmentId, title, maxScore, dueDate);
+                taskDao.addTask(task);
+                LOGGER.info("Успішно додано завдання: " + title);
             }
+            resp.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             LOGGER.warning("Помилка обробки завдання: " + e.getMessage());
-            resp.sendError(
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    e.getMessage()
-            );
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
 }
