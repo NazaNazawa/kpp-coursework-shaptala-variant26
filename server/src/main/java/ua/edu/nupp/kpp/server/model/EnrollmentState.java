@@ -1,4 +1,8 @@
 package ua.edu.nupp.kpp.server.model;
 
-public class EnrollmentState {
+public enum EnrollmentState {
+    REQUESTED,
+    APPROVED,
+    ACTIVE,
+    COMPLETED
 }
