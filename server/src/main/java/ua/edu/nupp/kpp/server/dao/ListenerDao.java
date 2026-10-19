@@ -28,7 +28,6 @@ public class ListenerDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return listeners;
     }
 
@@ -45,20 +44,6 @@ public class ListenerDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-    public void deleteListener(Long id) {
-        String sql = "DELETE FROM listener WHERE id = ?";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setLong(1, id);
-            pstmt.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Помилка видалення слухача ID " + id, e);
         }
     }
 }

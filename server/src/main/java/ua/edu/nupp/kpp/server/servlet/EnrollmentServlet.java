@@ -25,7 +25,6 @@ public class EnrollmentServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-
         List<Enrollment> enrollments = enrollmentDao.getAllEnrollments();
         objectMapper.writeValue(resp.getWriter(), enrollments);
     }
@@ -33,41 +32,21 @@ public class EnrollmentServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
-
         try {
             String action = req.getParameter("action");
-
-            if ("delete".equals(action)) {
-                Long id = Long.parseLong(req.getParameter("id"));
-
-                enrollmentDao.deleteEnrollment(id);
-
-                resp.setStatus(HttpServletResponse.SC_OK);
-                return;
-            }
-
             if ("transition".equals(action)) {
                 Long id = Long.parseLong(req.getParameter("id"));
-                EnrollmentState targetState = EnrollmentState.valueOf(
-                        req.getParameter("target_state")
-                );
+                EnrollmentState targetState = EnrollmentState.valueOf(req.getParameter("target_state"));
 
                 List<Enrollment> enrollments = enrollmentDao.getAllEnrollments();
-
-                Enrollment target = enrollments.stream()
-                        .filter(e -> e.getId().equals(id))
-                        .findFirst()
-                        .orElse(null);
+                Enrollment target = enrollments.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null);
 
                 if (target != null) {
                     enrollmentService.changeState(target, targetState);
                     enrollmentDao.updateEnrollment(target);
                     resp.setStatus(HttpServletResponse.SC_OK);
                 } else {
-                    resp.sendError(
-                            HttpServletResponse.SC_NOT_FOUND,
-                            "Зарахування не знайдено"
-                    );
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Зарахування не знайдено");
                 }
             } else {
                 Long courseId = Long.parseLong(req.getParameter("course_id"));
@@ -78,28 +57,13 @@ public class EnrollmentServlet extends HttpServlet {
 
                 double integralScore = enrollmentService.calculateIntegralScore(f1, f2, f3);
 
-                Enrollment enrollment = new Enrollment(
-                        null,
-                        courseId,
-                        listenerId,
-                        EnrollmentState.REQUESTED.name(),
-                        f1,
-                        f2,
-                        f3,
-                        integralScore
-                );
-
-                LOGGER.info(
-                        "Опрацьовано створення зарахування для слухача ID: " + listenerId
-                );
+                Enrollment enrollment = new Enrollment(null, courseId, listenerId, EnrollmentState.REQUESTED.name(), f1, f2, f3, integralScore);
+                LOGGER.info("Опрацьовано створення зарахування для слухача ID: " + listenerId);
                 resp.setStatus(HttpServletResponse.SC_OK);
             }
         } catch (Exception e) {
             LOGGER.warning("Помилка в EnrollmentServlet: " + e.getMessage());
-            resp.sendError(
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    e.getMessage()
-            );
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
 }

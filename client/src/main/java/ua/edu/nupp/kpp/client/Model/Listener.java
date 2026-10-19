@@ -8,6 +8,13 @@ public class Listener {
 
     public Listener() {}
 
+    public Listener(Long id, String fullName, String email, String phone) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
+    }
+
     public Listener(String fullName, String email, String phone) {
         this.fullName = fullName;
         this.email = email;

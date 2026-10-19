@@ -11,7 +11,6 @@ public class EnrollmentDao {
 
     public List<Enrollment> getAllEnrollments() {
         List<Enrollment> enrollments = new ArrayList<>();
-
         String sql = "SELECT id, course_id, listener_id, state, f1, f2, f3, integral_score FROM enrollment";
 
         try (Connection conn = DBUtil.getConnection();
@@ -33,7 +32,6 @@ public class EnrollmentDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return enrollments;
     }
 
@@ -53,20 +51,6 @@ public class EnrollmentDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-    public void deleteEnrollment(Long id) {
-        String sql = "DELETE FROM enrollment WHERE id = ?";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setLong(1, id);
-            pstmt.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Помилка видалення зарахування ID " + id, e);
         }
     }
 }
